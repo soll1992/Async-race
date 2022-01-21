@@ -1,10 +1,16 @@
 import React, { useRef } from 'react';
 import Button from '../button/button'
 import './car-track.scss';
+import Car from '../car/car'; 
 
 interface Props {
-    carName: string;
-    id: string;
+    carName: string,
+    id: string,
+    fill: string,
+    carsRefs: Array<HTMLDivElement | null>,
+    setId: React.Dispatch<React.SetStateAction<string>>,
+    setColor: React.Dispatch<React.SetStateAction<string>>,
+    setName: React.Dispatch<React.SetStateAction<string>>,
 }
 
 interface PatchResult {
@@ -15,11 +21,13 @@ interface PatchResult {
 export default function CarTrack(props: Props) {
 
   const currentCar: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
-
+  const car = currentCar.current
+  props.carsRefs.push(car)
+  
   function onClickHandler (e: React.MouseEvent) {
-    const car = currentCar.current
     const target = e.target as HTMLElement;
     const currentTarget = e.currentTarget as HTMLElement;
+
 
     function breakEngine(res: number) {
       res === 500 && car !==null && (car.style.animationPlayState = 'paused')
@@ -62,6 +70,10 @@ export default function CarTrack(props: Props) {
         .then(restartCar)
         .catch((err) => console.log('error'))
         break
+      case 'Select':
+        props.setId(currentTarget.id)
+        props.setName(props.carName)
+        props.setColor(props.fill)
     }
 
   }
@@ -78,7 +90,7 @@ export default function CarTrack(props: Props) {
           <Button class='' textContent='B'/>
         </div>
         <div ref={currentCar} className="car-wrapper">
-          <img className='car-svg' src="./svg/car.svg" alt="car" />
+          <Car fill={props.fill}/>
         </div>
         <div className="flag-wrapper">
           <div className="flag">

@@ -26,11 +26,14 @@ export function Garage(props: Props) {
     const [carColor, setCarColor] = useState<string>('');
     const [selectedCarСolor, setSelectedCarСolor] = useState('');
     const [selectedCarName, setSelectedCarName] = useState('');
+    const [selectedCarId, setSelectedCarId] = useState('');
     const [carCount, setCarCount] = useState(4);
     const [page, setPage] = useState(1);
+    const carsOnPage: Array<HTMLDivElement | null> = [];
 
     useEffect(() => {
         fetchCars()
+        console.log(carsOnPage)
       }, [])
 
 
@@ -54,29 +57,54 @@ export function Garage(props: Props) {
     console.log(carColor)
 
 
-    const fetchCars = () => {
+    function fetchCars() {
         fetch(`http://localhost:3000/garage?_page=${page}&_limit=7`, {
           method: 'GET',
         })
           .then((res) => res.json())
           .then((result) => setCarData(result))
           .catch((err) => console.log('error'))
-      }
+          return false
+    }
 
-    const saveCars = () => {
-    fetch('http://localhost:3000/garage', {
+    function saveCars() {
+      if (carName) {
+        fetch('http://localhost:3000/garage', {
           method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(  {
-            name: carName,
-            color: carColor,
-          }),
-    })
-        .then((res) => res.json())
-        .then((result) => console.log(result))
+          headers: {
+          'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(  {
+              name: carName,
+              color: carColor,
+            }),
+        })
+        .then(fetchCars)
         .catch((err) => console.log('error'))
+        setCarCount(carCount + 1)
+      } else {
+        alert('Input car name!')
+      }
+    }
+
+
+    function updateCar() {
+      if(selectedCarName) {
+        fetch(`http://localhost:3000/garage/${selectedCarId}`, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(  {
+              name: selectedCarName,
+              color: selectedCarСolor,
+            }),
+      })
+          .then(fetchCars)
+          .catch((err) => console.log('error'))
+      } else {
+        alert('Input car name!')
+      }
     }
 
     return <section className="content">
@@ -87,9 +115,16 @@ export function Garage(props: Props) {
           <Button class='' textContent='Create' onClick={saveCars}/>
         </section>
         <section className='carInput'>
-          <CarInput inputType={'text'} onChange={(e) => selectedNameInputHandler(e)}/>
-          <CarInput inputType={'color'} onChange={(e) => selectedColorInputHandler(e)}/>
-          <Button class='' textContent='Update' onClick={saveCars}/>
+          {
+            selectedCarId ? <CarInput inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/> :
+            <CarInput disabled={true} inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/>
+          }
+          <CarInput inputType={'color'} value={selectedCarСolor} onChange={(e) => selectedColorInputHandler(e)}/>
+          {
+            selectedCarId ? <Button class='' textContent='Update' onClick={updateCar}/> :
+            <Button disabled={true} class='' textContent='Update' onClick={updateCar}/>
+          }
+          
         </section>
         <section className='carInput'>
           <Button class='' textContent='Race' onClick={saveCars}/>
@@ -98,6 +133,13 @@ export function Garage(props: Props) {
         </section>
         <h2 className='title'>Garage({carCount})</h2>
         <h3 className="title page">Page #{page}</h3>
-        {carData.map(item => <CarTrack carName={item.name} id={String(item.id)} key={item.id}/>)}
+        {carData.map(item => <CarTrack carName={item.name} 
+                                      fill={item.color} 
+                                      id={String(item.id)} 
+                                      setId={setSelectedCarId} 
+                                      setName={setSelectedCarName}
+                                      setColor={setSelectedCarСolor}
+                                      carsRefs={carsOnPage} 
+                                      key={item.id}/>)}
     </section>
 }

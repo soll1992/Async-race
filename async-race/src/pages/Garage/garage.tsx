@@ -5,6 +5,8 @@ import { NavLink } from '../Components/nav-link/nav-link'
 import CarInput from '../Components/car-input/car-input'
 import Button from '../Components/button/button'
 import CarTrack from '../Components/car-track/car-track'
+import { modelsCars } from './models-cars'
+import { brandsCars } from './brands-cars'
 
 
 interface Props {
@@ -32,19 +34,30 @@ export function Garage(props: Props) {
     const [selectedCarСolor, setSelectedCarСolor] = useState('');
     const [selectedCarName, setSelectedCarName] = useState('');
     const [selectedCarId, setSelectedCarId] = useState('');
-    const [carCount, setCarCount] = useState('4');
-    const [page, setPage] = useState(1);
+    const [carCount, setCarCount] = useState('');
+    const [page, setPage] = useState(() => {
+      const saved = localStorage.getItem("currentPage");
+      console.log(carCount)
+      if(saved !== null && saved !== undefined) {
+          const initialValue = +saved;
+          return initialValue        
+      } else {
+          return  1
+      }});
     const carsOnPage: Array<React.MutableRefObject<HTMLDivElement | null>> = [];
     const aOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
     const bOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
 
     const raceButtonRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
     const resetButtonRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+    const prevRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+    const nextRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
 
     useEffect(() => {
         fetchCars()
         console.log(carsOnPage)
-      }, [])
+        localStorage.setItem("currentPage", JSON.stringify(page))
+      }, [page])
 
 
     function nameInputHandler(e: React.ChangeEvent) {
@@ -63,13 +76,35 @@ export function Garage(props: Props) {
       setSelectedCarСolor((e.target as HTMLInputElement).value)
     }
 
+    function getRandomNumber(arr: Array<string>) {
+      return Math.round(Math.random() * arr.length)
+    }
+
     function carNameGenerator() {
-      
+      return [...Array(100)].map(item => 
+        `${brandsCars[getRandomNumber(brandsCars)]} ${modelsCars[getRandomNumber(modelsCars)]}`)
+    }
+
+    function carColorGenerator() {
+      return '#' + (Math.random().toString(16) + '000000').substring(2,8).toUpperCase()
     }
 
     function carGenerator() {
-      
-    }
+      let carsNamesArr = carNameGenerator()
+      carsNamesArr.forEach(item => {
+        fetch('http://localhost:3000/garage', {
+          method: 'POST',
+          headers: {
+          'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(  {
+              name: item,
+              color: carColorGenerator(),
+            }),
+        })
+          .then(fetchCars)
+          .catch((err) => console.log('error'))
+    })};
 
     function fetchCars() {
         fetch(`http://localhost:3000/garage?_page=${page}&_limit=7`, {
@@ -84,6 +119,9 @@ export function Garage(props: Props) {
     function getHeader(res: Response) {
       const carCount = res.headers.get('X-Total-Count')
       carCount !== null && setCarCount(carCount)
+      if (carCount !== null && carCount !== undefined && +carCount < 8) {
+        setPage(1)
+      }
       return res
     }
 
@@ -190,6 +228,16 @@ export function Garage(props: Props) {
       }
     }
 
+    function nextPage() {
+      let currentPage = page + 1
+      setPage(currentPage)
+    }
+
+    function prevPage() {
+      let currentPage = page - 1
+      setPage(currentPage)
+    }
+
     return <section className="content">
         <NavLink textContent={'WINNERS'} link={'/winners'}/>
         <section className='carInput'>
@@ -212,7 +260,7 @@ export function Garage(props: Props) {
         <section className='carInput'>
           <Button refer={raceButtonRef} class='' textContent='Race' onClick={startAllCars}/>
           <Button refer={resetButtonRef} class='' textContent='Reset' onClick={resetAllCars}/>
-          <Button class='' textContent='Generate cars' onClick={saveCars}/>
+          <Button class='' textContent='Generate cars' onClick={carGenerator}/>
         </section>
         <h2 className='title'>Garage({carCount})</h2>
         <h3 className="title page">Page #{page}</h3>
@@ -227,5 +275,12 @@ export function Garage(props: Props) {
                                       buttonARefs={aOnPage} 
                                       buttonBRefs={bOnPage}
                                       key={item.id}/>)}
+        <div className="pagination">
+          {page === 1 ? <Button disabled={true} refer={prevRef} class='' textContent='Prev page' onClick={prevPage}/> :
+          <Button refer={prevRef} class='' textContent='Prev page' onClick={prevPage}/>}
+          {page === Math.ceil(+carCount / 7) ? <Button disabled={true} refer={nextRef} class='' textContent='Next page' onClick={nextPage}/> :
+          <Button refer={nextRef} class='' textContent='Next page' onClick={nextPage}/>        
+          }          
+        </div>
     </section>
 }

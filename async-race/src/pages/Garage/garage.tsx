@@ -32,7 +32,7 @@ export function Garage(props: Props) {
     const [selectedCarСolor, setSelectedCarСolor] = useState('');
     const [selectedCarName, setSelectedCarName] = useState('');
     const [selectedCarId, setSelectedCarId] = useState('');
-    const [carCount, setCarCount] = useState(4);
+    const [carCount, setCarCount] = useState('4');
     const [page, setPage] = useState(1);
     const carsOnPage: Array<React.MutableRefObject<HTMLDivElement | null>> = [];
     const aOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
@@ -63,18 +63,28 @@ export function Garage(props: Props) {
       setSelectedCarСolor((e.target as HTMLInputElement).value)
     }
 
-    console.log(carName)
-    console.log(carColor)
+    function carNameGenerator() {
+      
+    }
 
+    function carGenerator() {
+      
+    }
 
     function fetchCars() {
         fetch(`http://localhost:3000/garage?_page=${page}&_limit=7`, {
           method: 'GET',
         })
+          .then((res) => getHeader(res))
           .then((res) => res.json())
           .then((result) => setCarData(result))
           .catch((err) => console.log('error'))
-          return false
+    }
+
+    function getHeader(res: Response) {
+      const carCount = res.headers.get('X-Total-Count')
+      carCount !== null && setCarCount(carCount)
+      return res
     }
 
     function saveCars() {
@@ -91,7 +101,6 @@ export function Garage(props: Props) {
         })
         .then(fetchCars)
         .catch((err) => console.log('error'))
-        setCarCount(carCount + 1)
       } else {
         alert('Input car name!')
       }
@@ -213,6 +222,7 @@ export function Garage(props: Props) {
                                       setId={setSelectedCarId} 
                                       setName={setSelectedCarName}
                                       setColor={setSelectedCarСolor}
+                                      fetchCars={fetchCars}                                      
                                       carsRefs={carsOnPage}
                                       buttonARefs={aOnPage} 
                                       buttonBRefs={bOnPage}

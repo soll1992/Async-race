@@ -13,6 +13,7 @@ interface Props {
     setId: React.Dispatch<React.SetStateAction<string>>,
     setColor: React.Dispatch<React.SetStateAction<string>>,
     setName: React.Dispatch<React.SetStateAction<string>>,
+    fetchCars: () => void,
 }
 
 interface PatchResult {
@@ -83,7 +84,14 @@ export default function CarTrack(props: Props) {
         props.setId(currentTarget.id)
         props.setName(props.carName)
         props.setColor(props.fill)
-        break        
+        break 
+      case 'Remove':
+        fetch(`http://localhost:3000/garage/${currentTarget.id}`, {
+          method: 'DELETE',
+        })
+        .then(props.fetchCars)
+        .catch((err) => console.log('error'))
+        break      
     }
 
   }

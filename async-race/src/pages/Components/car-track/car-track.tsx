@@ -7,7 +7,9 @@ interface Props {
     carName: string,
     id: string,
     fill: string,
-    carsRefs: Array<HTMLDivElement | null>,
+    carsRefs: Array<React.MutableRefObject<HTMLDivElement | null>>,
+    buttonARefs: Array<React.MutableRefObject<HTMLButtonElement | null>>,
+    buttonBRefs: Array<React.MutableRefObject<HTMLButtonElement | null>>,
     setId: React.Dispatch<React.SetStateAction<string>>,
     setColor: React.Dispatch<React.SetStateAction<string>>,
     setName: React.Dispatch<React.SetStateAction<string>>,
@@ -21,13 +23,16 @@ interface PatchResult {
 export default function CarTrack(props: Props) {
 
   const currentCar: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
-  const car = currentCar.current
-  props.carsRefs.push(car)
-  
-  function onClickHandler (e: React.MouseEvent) {
-    const target = e.target as HTMLElement;
-    const currentTarget = e.currentTarget as HTMLElement;
+  const currentA: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+  const currentB: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+  props.carsRefs.push(currentCar)
+  props.buttonARefs.push(currentA)
+  props.buttonBRefs.push(currentB)
 
+  function onClickHandler (e: React.MouseEvent) {
+    const car = currentCar.current
+    const target = e.target as HTMLButtonElement;
+    const currentTarget = e.currentTarget as HTMLElement;
 
     function breakEngine(res: number) {
       res === 500 && car !==null && (car.style.animationPlayState = 'paused')
@@ -55,6 +60,8 @@ export default function CarTrack(props: Props) {
 
     switch(target.textContent) {
       case 'A': 
+        target.disabled = true;
+        currentB.current !==null && (currentB.current.disabled = false)
         fetch(`http://localhost:3000/engine?id=${currentTarget.id}&status=started`, {
           method: 'PATCH',
         })
@@ -64,6 +71,8 @@ export default function CarTrack(props: Props) {
         .catch((err) => console.log('error'))
         break
       case 'B':
+        target.disabled = true;
+        currentA.current !==null && (currentA.current.disabled = false)
         fetch(`http://localhost:3000/engine?id=${currentTarget.id}&status=stopped`, {
           method: 'PATCH',
         })
@@ -74,6 +83,7 @@ export default function CarTrack(props: Props) {
         props.setId(currentTarget.id)
         props.setName(props.carName)
         props.setColor(props.fill)
+        break        
     }
 
   }
@@ -86,8 +96,8 @@ export default function CarTrack(props: Props) {
       </div>
       <div className="car-track__body">
         <div className="car-track__body__starter">
-          <Button class='' textContent='A'/>
-          <Button class='' textContent='B'/>
+          <Button refer={currentA} class='' textContent='A'/>
+          <Button disabled={true} refer={currentB} class='' textContent='B'/>
         </div>
         <div ref={currentCar} className="car-wrapper">
           <Car fill={props.fill}/>

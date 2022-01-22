@@ -11,6 +11,11 @@ interface Props {
     
 }
 
+interface PatchResult {
+  distance: number,
+  velocity: number,
+}
+
 interface CarData {
   name: string,
   color: string,
@@ -29,7 +34,12 @@ export function Garage(props: Props) {
     const [selectedCarId, setSelectedCarId] = useState('');
     const [carCount, setCarCount] = useState(4);
     const [page, setPage] = useState(1);
-    const carsOnPage: Array<HTMLDivElement | null> = [];
+    const carsOnPage: Array<React.MutableRefObject<HTMLDivElement | null>> = [];
+    const aOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
+    const bOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
+
+    const raceButtonRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+    const resetButtonRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
 
     useEffect(() => {
         fetchCars()
@@ -107,6 +117,70 @@ export function Garage(props: Props) {
       }
     }
 
+    function breakEngine(car: React.MutableRefObject<HTMLDivElement | null>, res: number) {
+      res === 500 && car.current !==null && (car.current.style.animationPlayState = 'paused')
+    } 
+
+    function driveCar (car: CarData, carImg: React.MutableRefObject<HTMLDivElement | null>): ((value: void) => void | PromiseLike<void>) | null | undefined {
+      if(carImg.current !== null) {
+        fetch(`http://localhost:3000/engine?id=${car.id}&status=drive`, {
+          method: 'PATCH',
+        })
+        .then((result) => breakEngine(carImg, result.status))
+        .catch((err) => console.log('error'))
+      }
+      return
+    }
+
+    function startEngine(car: React.MutableRefObject<HTMLDivElement | null>, result: PatchResult) {
+      if(car.current !== null) {
+        car.current.style.animationDuration = `${result.distance / result.velocity}ms`
+        car.current.classList.add('animation')
+        car.current.style.animationPlayState = 'running'
+        resetButtonRef.current !==null && (resetButtonRef.current.disabled = false)
+      } 
+    }
+
+    function restartCar(car: React.MutableRefObject<HTMLDivElement | null>) : ((value: Response) => Response | PromiseLike<Response>) | null | undefined {
+      car.current !== null && car.current.classList.remove('animation')
+      return
+    }
+
+    function startAllCars() {
+      aOnPage.map(item => item.current !==null && (item.current.disabled = true))
+      bOnPage.map(item => item.current !==null && (item.current.disabled = false))
+      raceButtonRef.current !==null && (raceButtonRef.current.disabled = true)
+      resetButtonRef.current !==null && (resetButtonRef.current.disabled = true)
+      Promise.all(carData.map(item => fetch(`http://localhost:3000/engine?id=${item.id}&status=started`, {
+        method: 'PATCH',
+      }))).then(res => res.map((item, index) => item.json()
+                                                    .then(res => startEngine(carsOnPage[index], res))
+                                                    .then(driveCar(carData[index], carsOnPage[index]))
+                                                    .catch((err) => console.log('error'))))
+/*       for (let i = 0; i < carData.length; i += 1) {
+        fetch(`http://localhost:3000/engine?id=${carData[i].id}&status=started`, {
+          method: 'PATCH',
+        })
+        .then((res) => res.json())
+        .then((result) => startEngine(carsOnPage[i], result))
+        .then(driveCar(carData[i], carsOnPage[i]))
+        .catch((err) => console.log('error'))
+      } */
+    }
+
+    function resetAllCars() {
+      aOnPage.map(item => item.current !==null && (item.current.disabled = false))
+      bOnPage.map(item => item.current !==null && (item.current.disabled = true))
+      raceButtonRef.current !==null && (raceButtonRef.current.disabled = false)
+      for (let i = 0; i < carData.length; i += 1) {
+        fetch(`http://localhost:3000/engine?id=${carData[i].id}&status=stopped`, {
+          method: 'PATCH',
+        })
+        .then(restartCar(carsOnPage[i]))
+        .catch((err) => console.log('error'))
+      }
+    }
+
     return <section className="content">
         <NavLink textContent={'WINNERS'} link={'/winners'}/>
         <section className='carInput'>
@@ -127,8 +201,8 @@ export function Garage(props: Props) {
           
         </section>
         <section className='carInput'>
-          <Button class='' textContent='Race' onClick={saveCars}/>
-          <Button class='' textContent='Reset' onClick={saveCars}/>
+          <Button refer={raceButtonRef} class='' textContent='Race' onClick={startAllCars}/>
+          <Button refer={resetButtonRef} class='' textContent='Reset' onClick={resetAllCars}/>
           <Button class='' textContent='Generate cars' onClick={saveCars}/>
         </section>
         <h2 className='title'>Garage({carCount})</h2>
@@ -139,7 +213,9 @@ export function Garage(props: Props) {
                                       setId={setSelectedCarId} 
                                       setName={setSelectedCarName}
                                       setColor={setSelectedCarСolor}
-                                      carsRefs={carsOnPage} 
+                                      carsRefs={carsOnPage}
+                                      buttonARefs={aOnPage} 
+                                      buttonBRefs={bOnPage}
                                       key={item.id}/>)}
     </section>
 }

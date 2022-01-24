@@ -17,8 +17,8 @@ export function TableRowHead(props: Props) {
         <th>{props.id}</th>
         <th>{props.car}</th>
         <th>{props.name}</th>
-        <th onClick={props.sortWins}>{props.wins}</th>
-        <th onClick={props.sortTime}>{props.time}</th>
+        <th className='sort-button' onClick={props.sortWins}>{props.wins}</th>
+        <th className='sort-button' onClick={props.sortTime}>{props.time}</th>
     </tr>;
 }
 

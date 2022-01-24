@@ -6,7 +6,7 @@ interface Props {
 
 export default function Car(props: Props) {
   return <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-  width="120px" height="64px" viewBox="0 0 1280.000000 640.000000"
+  width="120px" height="50px" viewBox="0 0 1280.000000 640.000000"
   preserveAspectRatio="xMidYMid meet">
  <g transform="translate(0.000000,640.000000) scale(0.100000,-0.100000)"
  fill={props.fill} stroke="none">

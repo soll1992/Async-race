@@ -10,8 +10,8 @@ interface Props {
 export default function CarInput(props: Props) {
   return <div>
       {
-        props.disabled ? <input disabled type={props.inputType} value={props.value} onChange={props.onChange}/> :
-        <input type={props.inputType} value={props.value} onChange={props.onChange}/>
+        props.disabled ? <input className='input' disabled type={props.inputType} value={props.value} onChange={props.onChange}/> :
+        <input className='input' type={props.inputType} value={props.value} onChange={props.onChange}/>
       }
   </div>;
 }

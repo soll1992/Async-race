@@ -8,11 +8,6 @@ import CarTrack from '../Components/car-track/car-track'
 import { modelsCars } from './models-cars'
 import { brandsCars } from './brands-cars'
 
-
-interface Props {
-    
-}
-
 interface winnerData {
   wins: number,
   time: number
@@ -30,12 +25,30 @@ interface CarData {
 }
 
 
-export function Garage(props: Props) {
+export function Garage() {
 
     const [carData, setCarData] = useState<Array<CarData>>([])
-    const [carName, setCarName] = useState<string>('');
-    const [carColor, setCarColor] = useState<string>('');
-    const [selectedCarСolor, setSelectedCarСolor] = useState('');
+    const [carName, setCarName] = useState(() => {
+      const saved = localStorage.getItem("carName");
+      if(saved !== null && saved !== undefined) {
+          return saved        
+      } else {
+          return  ''
+      }});
+    const [carColor, setCarColor] = useState(() => {
+      const saved = localStorage.getItem("carColor");
+      if(saved !== null && saved !== undefined) {
+          return saved        
+      } else {
+          return  '#ffffff'
+      }});
+    const [selectedCarСolor, setSelectedCarСolor] = useState(() => {
+      const saved = localStorage.getItem("selectedCarСolor");
+      if(saved !== null && saved !== undefined) {
+          return saved        
+      } else {
+          return  '#ffffff'
+      }});
     const [selectedCarName, setSelectedCarName] = useState('');
     const [selectedCarId, setSelectedCarId] = useState('');
     const [carCount, setCarCount] = useState('');
@@ -69,11 +82,13 @@ export function Garage(props: Props) {
 
 
     function nameInputHandler(e: React.ChangeEvent) {
-        setCarName((e.target as HTMLInputElement).value)
+      setCarName((e.target as HTMLInputElement).value)
+      localStorage.setItem("carName", (e.target as HTMLInputElement).value)
     }
 
     function colorInputHandler(e: React.ChangeEvent) {
-        setCarColor((e.target as HTMLInputElement).value)
+      setCarColor((e.target as HTMLInputElement).value)
+      localStorage.setItem("carColor", (e.target as HTMLInputElement).value)      
     }
 
     function selectedNameInputHandler(e: React.ChangeEvent) {
@@ -82,6 +97,7 @@ export function Garage(props: Props) {
 
     function selectedColorInputHandler(e: React.ChangeEvent) {
       setSelectedCarСolor((e.target as HTMLInputElement).value)
+      localStorage.setItem("selectedCarСolor", (e.target as HTMLInputElement).value)
     }
 
     function getRandomNumber(arr: Array<string>) {
@@ -204,8 +220,6 @@ export function Garage(props: Props) {
       if (res.status === 200 && winner === true) {
         winner = false
         const sec = 1000
-        console.log('Winrer!')
-        console.log(car)
         if (carImg.current !== null) {
           const msStr = carImg.current.style.animationDuration
           const ms = msStr.slice(0, msStr.length - 2)
@@ -326,30 +340,34 @@ export function Garage(props: Props) {
     }
 
     return <section className="content">
-        <NavLink textContent={'WINNERS'} link={'/winners'}/>
         <div ref={winInfoRef} className="win-info">{`Winner! ${winName} came first in ${winTime}s`}</div>
-        <section className='carInput'>
-          <CarInput inputType={'text'} onChange={(e) => nameInputHandler(e)}/>
-          <CarInput inputType={'color'} onChange={(e) => colorInputHandler(e)}/>
-          <Button class='' textContent='Create' onClick={saveCars}/>
-        </section>
-        <section className='carInput'>
-          {
-            selectedCarId ? <CarInput inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/> :
-            <CarInput disabled={true} inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/>
-          }
-          <CarInput inputType={'color'} value={selectedCarСolor} onChange={(e) => selectedColorInputHandler(e)}/>
-          {
-            selectedCarId ? <Button class='' textContent='Update' onClick={updateCar}/> :
-            <Button disabled={true} class='' textContent='Update' onClick={updateCar}/>
-          }
-          
-        </section>
-        <section className='carInput'>
-          <Button refer={raceButtonRef} class='' textContent='Race' onClick={startAllCars}/>
-          <Button refer={resetButtonRef} class='' textContent='Reset' onClick={resetAllCars}/>
-          <Button class='' textContent='Generate cars' onClick={carGenerator}/>
-        </section>
+        <header className="header">
+          <NavLink textContent={'WINNERS'} link={'/winners'}/>
+          <div className="input-wrapper">
+            <section className='car-input'>
+              <CarInput inputType={'text'} value={carName} onChange={(e) => nameInputHandler(e)}/>
+              <CarInput inputType={'color'} value={carColor} onChange={(e) => colorInputHandler(e)}/>
+              <Button class='button' textContent='Create' onClick={saveCars}/>
+            </section>
+            <section className='car-input'>
+              {
+                selectedCarId ? <CarInput inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/> :
+                <CarInput disabled={true} inputType={'text'} value={selectedCarName} onChange={(e) => selectedNameInputHandler(e)}/>
+              }
+              <CarInput inputType={'color'} value={selectedCarСolor} onChange={(e) => selectedColorInputHandler(e)}/>
+              {
+                selectedCarId ? <Button class='button' textContent='Update' onClick={updateCar}/> :
+                <Button disabled={true} class='button' textContent='Update' onClick={updateCar}/>
+              }
+              
+            </section>
+            <section className='car-input'>
+              <Button refer={raceButtonRef} class='button button-margin' textContent='Race' onClick={startAllCars}/>
+              <Button refer={resetButtonRef} class='button button-margin' textContent='Reset' onClick={resetAllCars}/>
+              <Button class='button button-margin' textContent='Generate cars' onClick={carGenerator}/>
+            </section>
+          </div>
+        </header>
         <h2 className='title'>Garage({carCount})</h2>
         <h3 className="title page">Page #{page}</h3>
         {carData.map(item => <CarTrack carName={item.name} 
@@ -364,10 +382,10 @@ export function Garage(props: Props) {
                                       buttonBRefs={bOnPage}
                                       key={item.id}/>)}
         <div className="pagination">
-          {page === 1 ? <Button disabled={true} refer={prevRef} class='' textContent='Prev page' onClick={prevPage}/> :
-          <Button refer={prevRef} class='' textContent='Prev page' onClick={prevPage}/>}
-          {page === Math.ceil(+carCount / 7) ? <Button disabled={true} refer={nextRef} class='' textContent='Next page' onClick={nextPage}/> :
-          <Button refer={nextRef} class='' textContent='Next page' onClick={nextPage}/>        
+          {page === 1 ? <Button disabled={true} refer={prevRef} class='button button-margin' textContent='Prev page' onClick={prevPage}/> :
+          <Button refer={prevRef} class='button button-margin' textContent='Prev page' onClick={prevPage}/>}
+          {page === Math.ceil(+carCount / 7) ? <Button disabled={true} refer={nextRef} class='button button-margin' textContent='Next page' onClick={nextPage}/> :
+          <Button refer={nextRef} class='button button-margin' textContent='Next page' onClick={nextPage}/>        
           }          
         </div>
     </section>

@@ -4,9 +4,13 @@
 .car-track__body {
     display: flex;
     border-bottom: dashed white 1px;
+    margin-bottom: 10px;
     &__starter {
         display: flex;
         height: 50px;
+    }
+    .car-track__body__starter {
+        align-items: center;
     }
     .car-wrapper {
         position: relative;
@@ -19,11 +23,15 @@
         margin-right: 0;
         margin-left: auto;
     }
-    .flag {
+/*     .flag {
         width: 10px;
         height: 10px;
         background-color: red;
-    }
+    } */
+}
+
+.red {
+    background-color: red;
 }
 
 .animation {
@@ -36,6 +44,6 @@
         left: 0%;
     }
     100% {
-        left: calc(100% - 180px)
+        left: calc(100% - 230px)
     }
 }

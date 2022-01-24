@@ -101,20 +101,21 @@ export default function CarTrack(props: Props) {
 
   return <div className='car-track' id={props.id} onClick={(e) => onClickHandler(e)}>
       <div className="car-track__header">
-        <Button class='' textContent='Select'/>
-        <Button class='' textContent='Remove'/>
+        <Button class='button button-margin' textContent='Select'/>
+        <Button class='button button-margin red' textContent='Remove'/>
         <div className='car-name'>{props.carName}</div>
       </div>
       <div className="car-track__body">
         <div className="car-track__body__starter">
-          <Button refer={currentA} class='' textContent='A'/>
-          <Button disabled={true} refer={currentB} class='' textContent='B'/>
+          <Button refer={currentA} class='button button-margin' textContent='A'/>
+          <Button disabled={true} refer={currentB} class='button button-margin red' textContent='B'/>
         </div>
         <div ref={currentCar} className="car-wrapper">
           <Car fill={props.fill}/>
         </div>
         <div className="flag-wrapper">
           <div className="flag">
+            <img src="./svg/flag.svg" alt="flag" />
           </div>
         </div>
       </div>

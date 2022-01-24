@@ -22,15 +22,42 @@ interface CarData {
 export function Winners() {
 
     const [cars, setCars] = useState<Array<winnerData>>([]);
-    const [winPage, setWinPage] = useState(1);
+    const [winPage, setWinPage] = useState(() => {
+        const saved = localStorage.getItem("currentWinPage");
+        if(saved !== null && saved !== undefined) {
+            const initialValue = +saved;
+            return initialValue        
+        } else {
+            return  1
+        }});
     const [winCarCount, setWinCarCount] = useState(10);
-    const [winsASC, setWinsASC] = useState(false);
-    const [timeASC, setTimeASC] = useState(false);
-    const [currentSort, setCurrentSort] = useState('');
+    const [winsASC, setWinsASC] = useState(() => {
+        const saved = localStorage.getItem("winsASC");
+        if(saved !== null && saved !== undefined) {
+            const initialValue = JSON.parse(saved);
+            return initialValue        
+        } else {
+            return  false
+        }});
+    const [timeASC, setTimeASC] = useState(() => {
+        const saved = localStorage.getItem("timeASC");
+        if(saved !== null && saved !== undefined) {
+            const initialValue = JSON.parse(saved);
+            return initialValue        
+        } else {
+            return  false
+        }});
+    const [currentSort, setCurrentSort] = useState(() => {
+        const saved = localStorage.getItem("currentSort");
+        if(saved !== null && saved !== undefined) {
+            return saved        
+        } else {
+            return  'none'
+        }});
 
-    useEffect(() => {
+    useEffect(() => {        
         switch(currentSort) {
-            case '':
+            case 'none':
                 getWinners()
                 break
             case 'wins':
@@ -40,7 +67,10 @@ export function Winners() {
                 timeASC ? fitchTimeDESC() : fitchTimeASC()
                 break
         }
-        
+        localStorage.setItem("currentWinPage", JSON.stringify(winPage))
+        localStorage.setItem("currentSort", currentSort)
+        localStorage.setItem("winsASC", JSON.stringify(winsASC))
+        localStorage.setItem("timeASC", JSON.stringify(timeASC))
       }, [winPage])
 
     function getWinners() {
@@ -106,6 +136,7 @@ export function Winners() {
 
     function sortWinsASC() {
         setWinsASC(false)
+        localStorage.setItem("winsASC", 'false')
         fitchWinsASC()
     }
 
@@ -123,6 +154,7 @@ export function Winners() {
 
     function sortWinsDESC() {
         setWinsASC(true)
+        localStorage.setItem("winsASC", 'true')
         fitchWinsDESC()
     }
 
@@ -140,6 +172,7 @@ export function Winners() {
 
     function sortTimeASC() {
         setTimeASC(false)
+        localStorage.setItem("timeASC", 'false')
         fitchTimeASC()
     }
 
@@ -157,16 +190,19 @@ export function Winners() {
 
     function sortTimeDESC() {
         setTimeASC(true)
+        localStorage.setItem("timeASC", 'true')
         fitchTimeDESC()
     }
 
     function sortWins() {
         setCurrentSort('wins')
+        localStorage.setItem("currentSort", 'wins')
         winsASC ? sortWinsASC() : sortWinsDESC()
     }
 
     function sortTime() {
         setCurrentSort('time')
+        localStorage.setItem("currentSort", 'time')
         timeASC ? sortTimeASC() : sortTimeDESC()
     }
 
@@ -189,10 +225,10 @@ export function Winners() {
                 </tbody>
             </table>
             <div className="button-wrap">
-                {winPage === 1 ? <Button disabled={true} class='' textContent='Prev page' onClick={prevPage}/> :
-                <Button class='' textContent='Prev page' onClick={prevPage}/>}
-                {winPage === Math.ceil(+winCarCount / 10) ? <Button disabled={true} class='' textContent='Next page' onClick={nextPage}/> :
-                <Button class='' textContent='Next page' onClick={nextPage}/>        
+                {winPage === 1 ? <Button disabled={true} class='button button-margin blue' textContent='Prev page' onClick={prevPage}/> :
+                <Button class='button button-margin blue' textContent='Prev page' onClick={prevPage}/>}
+                {winPage === Math.ceil(+winCarCount / 10) ? <Button disabled={true} class='button button-margin blue' textContent='Next page' onClick={nextPage}/> :
+                <Button class='button button-margin blue' textContent='Next page' onClick={nextPage}/>        
                 } 
             </div>
         </div>

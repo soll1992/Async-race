@@ -7,6 +7,8 @@ interface Props {
     name?: string,
     wins: string,
     time: string
+    sortWins?: () => void
+    sortTime?: () => void
 }
 
 export function TableRowHead(props: Props) {
@@ -15,8 +17,8 @@ export function TableRowHead(props: Props) {
         <th>{props.id}</th>
         <th>{props.car}</th>
         <th>{props.name}</th>
-        <th>{props.wins}</th>
-        <th>{props.time}</th>
+        <th onClick={props.sortWins}>{props.wins}</th>
+        <th onClick={props.sortTime}>{props.time}</th>
     </tr>;
 }
 

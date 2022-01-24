@@ -1,9 +1,19 @@
 .carInput {
     display: flex;
 }
-.title {
-    color: black;
-}
 .pagination {
     display: flex;
+}
+.win-info {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 40%;
+    background-color: rgb(41, 129, 201);
+    padding: 20px;
+    border-radius: 20px;
+    transform: translateX(-50%);
+}
+.win-info__active {
+    display: block;
 }

@@ -13,6 +13,11 @@ interface Props {
     
 }
 
+interface winnerData {
+  wins: number,
+  time: number
+}
+
 interface PatchResult {
   distance: number,
   velocity: number,
@@ -28,22 +33,25 @@ interface CarData {
 export function Garage(props: Props) {
 
     const [carData, setCarData] = useState<Array<CarData>>([])
-    const [formData, setFormData] = useState('')
     const [carName, setCarName] = useState<string>('');
     const [carColor, setCarColor] = useState<string>('');
     const [selectedCarСolor, setSelectedCarСolor] = useState('');
     const [selectedCarName, setSelectedCarName] = useState('');
     const [selectedCarId, setSelectedCarId] = useState('');
     const [carCount, setCarCount] = useState('');
+    const [winName, setWinName] = useState('');
+    const [winTime, setWinTime] = useState('');
     const [page, setPage] = useState(() => {
       const saved = localStorage.getItem("currentPage");
-      console.log(carCount)
       if(saved !== null && saved !== undefined) {
           const initialValue = +saved;
           return initialValue        
       } else {
           return  1
       }});
+
+    let winner = true
+
     const carsOnPage: Array<React.MutableRefObject<HTMLDivElement | null>> = [];
     const aOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
     const bOnPage: Array<React.MutableRefObject<HTMLButtonElement | null>> = [];
@@ -52,10 +60,10 @@ export function Garage(props: Props) {
     const resetButtonRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
     const prevRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
     const nextRef: React.MutableRefObject<HTMLButtonElement | null> = useRef(null)
+    const winInfoRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
 
     useEffect(() => {
         fetchCars()
-        console.log(carsOnPage)
         localStorage.setItem("currentPage", JSON.stringify(page))
       }, [page])
 
@@ -77,7 +85,7 @@ export function Garage(props: Props) {
     }
 
     function getRandomNumber(arr: Array<string>) {
-      return Math.round(Math.random() * arr.length)
+      return Math.round(Math.random() * (arr.length - 1))
     }
 
     function carNameGenerator() {
@@ -164,8 +172,9 @@ export function Garage(props: Props) {
       }
     }
 
-    function breakEngine(car: React.MutableRefObject<HTMLDivElement | null>, res: number) {
-      res === 500 && car.current !==null && (car.current.style.animationPlayState = 'paused')
+    function breakEngine(car: React.MutableRefObject<HTMLDivElement | null>, res: Response) {
+      res.status === 500 && car.current !==null && (car.current.style.animationPlayState = 'paused')
+      return res
     } 
 
     function driveCar (car: CarData, carImg: React.MutableRefObject<HTMLDivElement | null>): ((value: void) => void | PromiseLike<void>) | null | undefined {
@@ -173,12 +182,88 @@ export function Garage(props: Props) {
         fetch(`http://localhost:3000/engine?id=${car.id}&status=drive`, {
           method: 'PATCH',
         })
-        .then((result) => breakEngine(carImg, result.status))
+        .then((res) => breakEngine(carImg, res))
+        .then((res) =>  checkWiner(res, car, carImg))
         .catch((err) => console.log('error'))
       }
       return
     }
 
+    function deActiveWinInfo(div: HTMLDivElement) {
+      div.classList.remove('win-info__active')
+    }
+
+    function activeWinInfo() {
+      if(winInfoRef.current!==null) {
+        winInfoRef.current.classList.add('win-info__active')
+        setTimeout(deActiveWinInfo, 2000, winInfoRef.current)
+      } 
+    }
+
+    function checkWiner(res: Response, car: CarData, carImg: React.MutableRefObject<HTMLDivElement | null>) {
+      if (res.status === 200 && winner === true) {
+        winner = false
+        const sec = 1000
+        console.log('Winrer!')
+        console.log(car)
+        if (carImg.current !== null) {
+          const msStr = carImg.current.style.animationDuration
+          const ms = msStr.slice(0, msStr.length - 2)
+          const winTime = Math.round(+ms / sec * 100) / 100 //тут
+          setWinName(car.name)
+          setWinTime(String(winTime))
+          activeWinInfo()
+          postWinner(car.id, winTime)
+        }
+      }
+    }
+
+    function getWinner(id: number, carTime: number) {
+      fetch(`http://localhost:3000/winners/${id}`, {
+        method: 'GET',
+      })
+        .then((res) => res.json())
+        .then((result) => updateWinerCar(id, result, carTime))
+        .catch((err) => console.log('error'))
+    }
+
+    function updateWinerCar(id: number, result: winnerData, carTime: number) {
+      let bestTime = 0
+      carTime >= result.time ? bestTime = result.time : bestTime = carTime
+      fetch(`http://localhost:3000/winners/${id}`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(  {
+          wins: result.wins + 1,
+          time: bestTime
+        }),
+      })
+    }
+
+    function updateWinner(res: Response, id: number, carTime: number) {
+      if (res.status === 500) {
+        getWinner(id, carTime)
+      }
+    }
+
+    function postWinner(carId: number, carTime: number) {
+          fetch('http://localhost:3000/winners', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(  {
+              id: carId,
+              wins: 1,
+              time: carTime
+              }),
+          })
+          .then((res) => updateWinner(res, carId, carTime))
+          .catch((err) => console.log('error'))
+    } 
+        
     function startEngine(car: React.MutableRefObject<HTMLDivElement | null>, result: PatchResult) {
       if(car.current !== null) {
         car.current.style.animationDuration = `${result.distance / result.velocity}ms`
@@ -194,8 +279,9 @@ export function Garage(props: Props) {
     }
 
     function startAllCars() {
+      winner = true
       aOnPage.map(item => item.current !==null && (item.current.disabled = true))
-      bOnPage.map(item => item.current !==null && (item.current.disabled = false))
+      bOnPage.map(item => item.current !==null && (item.current.disabled = true))
       raceButtonRef.current !==null && (raceButtonRef.current.disabled = true)
       resetButtonRef.current !==null && (resetButtonRef.current.disabled = true)
       Promise.all(carData.map(item => fetch(`http://localhost:3000/engine?id=${item.id}&status=started`, {
@@ -216,6 +302,7 @@ export function Garage(props: Props) {
     }
 
     function resetAllCars() {
+      winner = false
       aOnPage.map(item => item.current !==null && (item.current.disabled = false))
       bOnPage.map(item => item.current !==null && (item.current.disabled = true))
       raceButtonRef.current !==null && (raceButtonRef.current.disabled = false)
@@ -240,6 +327,7 @@ export function Garage(props: Props) {
 
     return <section className="content">
         <NavLink textContent={'WINNERS'} link={'/winners'}/>
+        <div ref={winInfoRef} className="win-info">{`Winner! ${winName} came first in ${winTime}s`}</div>
         <section className='carInput'>
           <CarInput inputType={'text'} onChange={(e) => nameInputHandler(e)}/>
           <CarInput inputType={'color'} onChange={(e) => colorInputHandler(e)}/>

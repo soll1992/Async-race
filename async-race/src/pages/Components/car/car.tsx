@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface Props {
-    fill: string,
+    fill?: string,
 }
 
 export default function Car(props: Props) {

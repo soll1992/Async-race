@@ -91,6 +91,9 @@ export default function CarTrack(props: Props) {
         })
         .then(props.fetchCars)
         .catch((err) => console.log('error'))
+        fetch(`http://localhost:3000/winners/${currentTarget.id}`, {
+          method: 'DELETE',
+        })
         break      
     }
 

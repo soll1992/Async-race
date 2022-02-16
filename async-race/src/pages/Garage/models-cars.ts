@@ -1,3 +1,4 @@
+/* eslint-disable-next-line */
 export const modelsCars: Array<string> = [
   'Roadster',
   'S',
@@ -49,4 +50,4 @@ export const modelsCars: Array<string> = [
   '911',
   'Cayenne',
   'FX37',
-]
+];

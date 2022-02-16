@@ -7,11 +7,17 @@ interface Props {
     onChange: React.ChangeEventHandler,
 }
 
-export default function CarInput(props: Props) {
-  return <div>
+export default function CarInput({
+  inputType, value, disabled, onChange,
+}: Props) {
+  return (
+    <div>
       {
-        props.disabled ? <input className='input' disabled type={props.inputType} value={props.value} onChange={props.onChange}/> :
-        <input className='input' type={props.inputType} value={props.value} onChange={props.onChange}/>
+        disabled ? <input className="input" disabled type={inputType} value={value} onChange={onChange} />
+          : <input className="input" type={inputType} value={value} onChange={onChange} />
       }
-  </div>;
+    </div>
+  );
 }
+
+CarInput.defaultProps = { value: null, disabled: null };

@@ -1,3 +1,4 @@
+/* eslint-disable-next-line */
 export const brandsCars: Array<string> = [
   'Audi',
   'Alfa Romeo',
@@ -49,4 +50,4 @@ export const brandsCars: Array<string> = [
   'Chevrolet',
   'Mazzanti',
   'Daewoo',
-]
+];

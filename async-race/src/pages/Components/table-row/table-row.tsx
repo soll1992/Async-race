@@ -1,34 +1,27 @@
 import React from 'react';
 
 interface Props {
-    no: string,
-    id: string,
-    car: string | JSX.Element
-    name?: string,
-    wins: string,
-    time: string
-    sortWins?: () => void
-    sortTime?: () => void
+    no: string;
+    id: string;
+    car: string | React.ReactElement;
+    name?: string;
+    wins: string;
+    time: string;
 }
 
-export function TableRowHead(props: Props) {
-    return <tr>
-        <th>{props.no}</th>
-        <th>{props.id}</th>
-        <th>{props.car}</th>
-        <th>{props.name}</th>
-        <th className='sort-button' onClick={props.sortWins}>{props.wins}</th>
-        <th className='sort-button' onClick={props.sortTime}>{props.time}</th>
-    </tr>;
+export default function TableRow({
+  no, id, car, name, wins, time,
+}: Props) {
+  return (
+    <tr>
+      <td>{no}</td>
+      <td>{id}</td>
+      <td>{car}</td>
+      <td>{name}</td>
+      <td>{wins}</td>
+      <td>{time}</td>
+    </tr>
+  );
 }
 
-export function TableRow(props: Props) {
-    return <tr>
-        <td>{props.no}</td>
-        <td>{props.id}</td>
-        <td>{props.car}</td>
-        <td>{props.name}</td>
-        <td>{props.wins}</td>
-        <td>{props.time}</td>
-    </tr>;
-  }
+TableRow.defaultProps = { name: '' };

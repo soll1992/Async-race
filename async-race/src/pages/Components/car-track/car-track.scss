@@ -1,0 +1,49 @@
+.car-track__header {
+    display: flex;
+}
+.car-track__body {
+    display: flex;
+    border-bottom: dashed white 1px;
+    margin-bottom: 10px;
+    &__starter {
+        display: flex;
+        height: 50px;
+    }
+    .car-track__body__starter {
+        align-items: center;
+    }
+    .car-wrapper {
+        position: relative;
+    }
+    .car-svg {
+        height: 50px;
+    }
+    .flag-wrapper {
+        width: 160px;
+        margin-right: 0;
+        margin-left: auto;
+    }
+/*     .flag {
+        width: 10px;
+        height: 10px;
+        background-color: red;
+    } */
+}
+
+.red {
+    background-color: red;
+}
+
+.animation {
+    animation: drive 3s linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes drive {
+    0% {
+        left: 0%;
+    }
+    100% {
+        left: calc(100% - 230px)
+    }
+}

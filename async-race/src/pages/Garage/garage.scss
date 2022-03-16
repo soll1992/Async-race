@@ -1,0 +1,49 @@
+.carInput {
+    display: flex;
+}
+.pagination {
+    display: flex;
+}
+.win-info {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 40%;
+    background-color: rgb(41, 129, 201);
+    padding: 20px;
+    border-radius: 20px;
+    transform: translateX(-50%);
+}
+.win-info__active {
+    display: block;
+    z-index: 100;
+}
+.header {
+    display: flex;
+    align-items: center;    
+    height: 120px;
+}
+.car-input {
+    display: flex;
+}
+.input-wrapper {
+    margin-left: 20px;
+}
+.input {
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+.button {
+    background-color: green;
+    color: white;
+    height: 25px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.button:disabled {
+    opacity: 50%;
+}
+.button-margin {
+    margin: 0 10px;
+}
